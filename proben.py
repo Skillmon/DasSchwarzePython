@@ -1,7 +1,7 @@
 import random
 random.seed()
 
-remain = 0
+global remain
 
 def w6(num=1):# {{{
     a = []
@@ -22,16 +22,21 @@ def w20(num=1):# {{{
 def w20_1(): return random.randint(1,20)
 def w20_c(num=1): return [ random.randint(1,20) for i in range(num) ]
 
-# Meljow Stats
-stats={"mu":13,"kl":14,"in":13,"ch":14,"ff":12,"ge":13,"ko":13,"kk":12}
+# Meljow Stats (leider hier noch nötig, gute Lösung für Proben etc. gesucht)
+# stats={"mu":13,"kl":14,"in":13,"ch":14,"ff":12,"ge":13,"ko":13,"kk":12}
+
+def set_stats(newstats):# {{{
+    global stats
+    stats = newstats
+# }}}
 
 def probe1(st1,harder=0,skill=0,silent=False):# {{{
+    global remain
     v1 = w20_1()
     s1 = stats[st1]
     if not silent: print("%s %2d / %2d"%(st1,v1,s1))
     skarder = skill - harder
     rem = s1 + skarder - v1
-    global remain
     remain = rem
     if v1 == 20:
         if not silent: print("Probe nicht bestanden")
@@ -48,6 +53,7 @@ def probe1(st1,harder=0,skill=0,silent=False):# {{{
 # }}}
 
 def probe3(st1,st2,st3,harder=0,skill=0,silent=False):# {{{
+    global remain 
     v1,v2,v3 = w20_c(3)
     s1 = stats[st1]
     s2 = stats[st2]
@@ -71,7 +77,6 @@ def probe3(st1,st2,st3,harder=0,skill=0,silent=False):# {{{
             if not silent: print("Probe bestanden")
             return True
     rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
-    global remain 
     remain = rem
     if rem >= 0:
         if not silent:
@@ -85,11 +90,8 @@ def probe3(st1,st2,st3,harder=0,skill=0,silent=False):# {{{
 # }}}
 
 def probe(st,harder=0,skill=0,silent=False,nonstop=False):# {{{
+    global remain
     if type(st) == str or type(st) == int: st = (st,)
-    # elif len(st) == 1:
-        # return probe1(st[0],harder=harder,skill=skill,silent=silent)
-    # elif len(st) == 3:
-        # return probe3(st[0],st[1],st[2],harder=harder,skill=skill,silent=silent)
     skarder = skill - harder
     failed = False
     if skarder < 0:
@@ -112,7 +114,6 @@ def probe(st,harder=0,skill=0,silent=False,nonstop=False):# {{{
             return False
         else:
             if not silent: print("Probe bestanden")
-            global remain
             remain = 0
             return True
     else:
@@ -136,55 +137,13 @@ def probe(st,harder=0,skill=0,silent=False,nonstop=False):# {{{
             if not silent: print("Probe nicht bestanden")
             return False
         else:
-            global remain
             remain = rem
             if not silent:
                 print("Probe bestanden",end="")
                 if skarder > 0: print(" mit %d übrig"%(rem),end="")
                 print("")
             return True
-    ## Old implementation
-    s1 = stats[st1]
-    if not silent: print("%s %2d / %2d"%(st1,v1,s1))
-    if st2:
-        v2 = w20_1()
-        s2 = stats[st2]
-        if not silent: print("%s %2d / %2d"%(st2,v2,stats[st2]))
-    else:
-        v2 = 0
-        s2 = 1000
-    if st3:
-        v3 = w20_1()
-        s3  = stats[st3]
-        if not silent: print("%s %2d / %2d"%(st3,v3,stats[st3]))
-    else:
-        v3 = 0
-        s3 = 1000
-    if ( v1 == 20 or v2 == 20 or v3 == 20 ):
-        if not silent: print("Probe nicht bestanden")
-        return False
-    d1 = s1 - v1
-    d2 = s2 - v2
-    d3 = s3 - v3
-    skarder = skill - harder
-    if ( skarder < 0 ):
-        if ( d1 + skarder < 0 or d2 + skarder < 0 or d3 + skarder < 0 ):
-            if not silent: print("Probe nicht bestanden")
-            return False
-        else:
-            if not silent: print("Probe bestanden")
-            return True
-    else:
-        rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
-        if ( rem >= 0):
-            if not silent:
-                print("Probe bestanden",end='')
-                if ( skarder > 0 ): print(" mit %d übrig"%(rem),end='')
-                print("")
-            return True
-        else:
-            if not silent: print("Probe nicht bestanden")
-            return False# }}}
+# }}}
 
 def wahrscheinlich(st1,st2=False,st3=False,harder=0,skill=0,silent=False,# {{{
         tries=1e5):
