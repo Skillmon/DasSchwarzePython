@@ -2,6 +2,8 @@ import random
 random.seed()
 
 global remain
+global stats
+stats = {}
 
 def w6(num=1):# {{{
     a = []
@@ -30,7 +32,7 @@ def set_stats(newstats):# {{{
     stats = newstats
 # }}}
 
-def probe1(st1,harder=0,skill=0,silent=False):# {{{
+def probe1(st1,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain
     v1 = w20_1()
     s1 = stats[st1]
@@ -52,7 +54,7 @@ def probe1(st1,harder=0,skill=0,silent=False):# {{{
         return False
 # }}}
 
-def probe3(st1,st2,st3,harder=0,skill=0,silent=False):# {{{
+def probe3(st1,st2,st3,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain 
     v1,v2,v3 = w20_c(3)
     s1 = stats[st1]
@@ -89,7 +91,7 @@ def probe3(st1,st2,st3,harder=0,skill=0,silent=False):# {{{
         return False
 # }}}
 
-def probe(st,harder=0,skill=0,silent=False,nonstop=False):# {{{
+def probe(st,harder=0,skill=0,silent=False,nonstop=False,stats=stats):# {{{
     global remain
     if type(st) == str or type(st) == int: st = (st,)
     skarder = skill - harder
