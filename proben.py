@@ -158,7 +158,7 @@ def probe(st,harder=0,skill=0,silent=False,nonstop=False,stats=stats):# {{{
             return True
 # }}}
 
-def wahrscheinlich(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
+def chance(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
         stats=stats):
     skarder = skill - harder
     s1 = (st1 if type(st1) == int else stats[st1])
@@ -173,7 +173,7 @@ def wahrscheinlich(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
                 for w3 in range(1,21):
                     num1  = (w1 ==  1) + (w2 ==  1) + (w3 ==  1)
                     if num1 > 1:
-                        prob = prob + 1
+                        prob += 1
                         continue
                     num20 = (w1 == 20) + (w2 == 20) + (w3 == 20)
                     if num20 > 1: continue
@@ -181,12 +181,13 @@ def wahrscheinlich(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
                     d2 = s2 - w2
                     d3 = s3 - w3
                     rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
-                    if rem >= 0: prob = prob + 1
-        prob = prob / 8000
+                    if rem >= 0: prob += 1
+        prob /= 8000
+    prob = max(prob,0.00725)# mit mind. zwei Einsen hat man immer bestanden
     if not silent:
         print("Wahrscheinlichkeit des Bestehens: {0} %".format(
-            round(100 * prob, 8)))
-    return prob
+            round(100 * prob, 4)))
+    return round(prob,6)
 # }}}
 
 # MU = "mu"

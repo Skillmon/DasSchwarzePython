@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET # xml parsing
+import re
 from . import ipop
 from . import proben
 from . import talentlisten as talente
@@ -29,16 +30,16 @@ class Held(object):# {{{
             self.talente = {}
     # }}}
     def zauber(self, name, harder=0):# {{{
-        return self.__skill_probe(name, talente.suche.zauber,
+        return self._skill_probe(name, talente.suche.zauber,
                 talente.zauberliste.namen, self.eigenschaften.zauber, "Welcher",
                 "Zauber", talente.probe.zauber, harder=harder)
     # }}}
     def talent(self, name, harder=0):# {{{
-        return self.__skill_probe(name, talente.suche.talent,
+        return self._skill_probe(name, talente.suche.talent,
                 talente.talentliste.namen, self.eigenschaften.talente,
                 "Welches", "Talent", talente.probe.talent, harder=harder)
     # }}}
-    def __skill_probe(self, name, suche, talentliste, bekannt, welchers,# {{{
+    def _skill_probe(self, name, suche, talentliste, bekannt, welchers,# {{{
             talauber, probe, harder=0):
         matches = suche(name)
         if len(matches) == 0:
@@ -51,10 +52,8 @@ class Held(object):# {{{
             elif len(evtl) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
                 print(welchers+" "+talauber+" ist gemeint?")
-                for i,m in enumerate(evtl):
-                    print("  %d: %s"%(i,talentliste[m]))
-                zz = evtl[ipop.int_input("Nummer: ",len(matches)-1)]
-                name = talentliste[zz]
+                name = ipop.choice_from_list(evtl, print_list=talentliste,
+                        out_list=talentliste)
             else: name = talentliste[evtl[0]]
         else:
             zz = talentliste[matches[0]]
@@ -74,16 +73,16 @@ class Held(object):# {{{
         return ret
     # }}}
     def neues_talent(self, name, TaW, fullmatch=False):# {{{
-        return self.__neuer_skill(name, TaW, talente.suche.talent,
+        return self._neuer_skill(name, TaW, talente.suche.talent,
                 talente.talentliste, self.eigenschaften.talente, "Welches",
                 "Talent", Talent, fullmatch=fullmatch)
     # }}}
     def neuer_zauber(self, name, ZfW, fullmatch=False):# {{{
-        return self.__neuer_skill(name, ZfW, talente.suche.zauber,
+        return self._neuer_skill(name, ZfW, talente.suche.zauber,
                 talente.zauberliste, self.eigenschaften.zauber, "Welcher",
                 "Zauber", Zauber, fullmatch=fullmatch)
     # }}}
-    def __neuer_skill(self, name, skill, suche, talentliste, bekannt,# {{{
+    def _neuer_skill(self, name, skill, suche, talentliste, bekannt,# {{{
             welchers, talauber, Talauber, fullmatch=False):
         if fullmatch:
             if name not in talentliste.namen:
@@ -98,9 +97,8 @@ class Held(object):# {{{
             elif len(matches) != 1:
                 print("'%s' koonte nicht eindeutig ermittelt werden!"%(name))
                 print(welchers+" "+talauber+" ist gemeint?")
-                for i,m in enumerate(matches):
-                    print("  %d: %s"%(i,talentliste.namen[m]))
-                entry = matches[ipop.int_input("Nummer: ",len(matches) - 1)]
+                entry = ipop.choice_from_list(matches,
+                        print_list=talentliste.namen)
             else: entry = matches[0]
         name = talentliste.namen[entry]
         if name in bekannt:
@@ -110,17 +108,22 @@ class Held(object):# {{{
         bekannt[name] = Talauber(probe, skill, name=name)
         return True
     # }}}
-    def liste_talente(self, probe=False):# {{{
-        return self.__liste_skills(self.eigenschaften.talente, probe=probe)
+    def liste_talente(self, name=False, probe=False):# {{{
+        return self._liste_skills(self.eigenschaften.talente, name=name,
+                probe=probe)
     # }}}
-    def liste_zauber(self, probe=False):# {{{
-        return self.__liste_skills(self.eigenschaften.zauber, probe=probe)
+    def liste_zauber(self, name=False, probe=False):# {{{
+        return self._liste_skills(self.eigenschaften.zauber, name=name,
+                probe=probe)
     # }}}
-    def __liste_skills(self, liste, probe=False):# {{{
+    def _liste_skills(self, liste, name=False, probe=False):# {{{
         l = 0
+        if name: pattern = re.compile(".*" + name + ".*",re.I)
         for k, v in liste.items():
+            if name and re.search(pattern, k) == None: continue
             l = max(l,len(k))
         for k, v in liste.items():
+            if name and re.search(pattern, k) == None: continue
             print(k,end="")
             for i in range(l - len(k)):
                 print(" ",end="")
@@ -131,15 +134,15 @@ class Held(object):# {{{
                 print(v.probe,end="")
             print("")
     # }}}
-    def wahrscheinlich_zauber(self,name,harder=0):
-        return self.__wahrscheinlich(name, talente.suche.zauber,
+    def chance_zauber(self,name,harder=0):
+        return self._chance(name, talente.suche.zauber,
                 talente.zauberliste, self.eigenschaften.zauber, "Welcher",
                 "Zauber", harder=harder)
-    def wahrscheinlich_talent(self,name,harder=0):
-        return self.__wahrscheinlich(name, talente.suche.talent,
+    def chance_talent(self,name,harder=0):
+        return self._chance(name, talente.suche.talent,
                 talente.talentliste, self.eigenschaften.talente, "Welches",
                 "Talent", harder=harder)
-    def __wahrscheinlich(self, name, suche, talentliste, bekannt,
+    def _chance(self, name, suche, talentliste, bekannt,
             welchers, talauber, harder=0):
         matches = suche(name)
         if len(matches) == 0:
@@ -153,10 +156,8 @@ class Held(object):# {{{
             elif len(evtl) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
                 print(welchers+" "+talauber+" ist gemeint?")
-                for i, m in enumerate(evtl):
-                    print("  %d: %s"%(i,talentliste.namen[m]))
-                zz = evtl[ipop.int_input("Nummer: ",len(matches)-1)]
-                name = talentliste.namen[zz]
+                name = ipop.choice_from_list(evtl, print_list=talentliste.namen,
+                        out_list=talentliste.namen)
             else: name = talentliste.namen[evtl[0]]
         else:
             zz = talentliste.namen[matches[0]]
@@ -173,7 +174,7 @@ class Held(object):# {{{
             harder = harder + probe[1]
             probe = probe[0]
         else: return False
-        return proben.wahrscheinlich(probe[0], probe[1], probe[2],
+        return proben.chance(probe[0], probe[1], probe[2],
                 harder=harder, skill=skill, stats=stats)
     def aktiv(self):# {{{
         """Setzt die momentan vom Submodule 'proben' verwendeten stats auf die

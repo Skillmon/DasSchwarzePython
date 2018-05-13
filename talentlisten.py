@@ -60,9 +60,7 @@ class Probe(object):# {{{
             elif len(matches) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
                 print(welchers+" "+talauber+" ist gemeint?")
-                for i,m in enumerate(matches):
-                    print("  %d: %s"%(i,liste.namen[m]))
-                entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
+                entry = ipop.choice_from_list(matches, print_list=liste.namen)
             else: entry = matches[0]
         probe = self.proben_eigenschaften(liste.namen[entry], liste,
                 fullmatch=True)
@@ -88,9 +86,7 @@ class Probe(object):# {{{
             elif len(matches) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
                 print("Was ist gemeint?")
-                for i, m in enumerate(matches):
-                    print("  %d: %s"%(i,liste.namen[m]))
-                entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
+                entry = ipop.choice_from_list(matches, print_list=liste.namen)
             else: entry = matches[0]
         probe  = list(liste.proben[entry])
         harder = 0
@@ -99,9 +95,7 @@ class Probe(object):# {{{
             if type(probe[3]) == list:
                 print("Die dritte Eigenschaft der Probe scheint wählbar.")
                 print("Welche Eigenschaft soll verwendet werden?")
-                for i,k in enumerate(probe[3]):
-                    print("  %d: %s"%(i,k))
-                probe[2] = probe[3][ipop.int_input("Nummer: ",len(probe[3]-1))]
+                probe[2] = ipop.choice_from_list(probe[3])
             elif probe[3] == "+Mod":
                 print("Die Probe kann von Modifikationen erschwert werden.")
                 harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
@@ -113,7 +107,7 @@ class Probe(object):# {{{
                 print("Die dritte Eigenschaft der Probe kann frei gewählt "
                     "werden.")
                 print("Welche Eigenschaft soll verwendet werden?")
-                probe[2] = ipop.choice_from_list(basis_eigenschaften,"Numme: ")
+                probe[2] = ipop.choice_from_list(basis_eigenschaften)
             else:
                 print("Kritischer Fehler in Talentlistenstruktur.")
                 print("Das vierte Feld in 'Proben' hat eine unbekannte "
