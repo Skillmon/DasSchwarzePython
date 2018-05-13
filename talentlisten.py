@@ -2,6 +2,8 @@ import re
 from . import ipop
 from . import proben
 
+basis_eigenschaften = ("mu","kl","in","ch","ff","ge","ko","kk")
+
 class Talentliste(object):# {{{
     def __init__(self,namenUproben=False):
         if not namenUproben:
@@ -90,7 +92,7 @@ class Probe(object):# {{{
                     print("  %d: %s"%(i,liste.namen[m]))
                 entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
             else: entry = matches[0]
-        probe  = liste.proben[entry]
+        probe  = list(liste.proben[entry])
         harder = 0
         if len(probe) == 3: pass
         elif len(probe) == 4:# {{{
@@ -101,12 +103,17 @@ class Probe(object):# {{{
                     print("  %d: %s"%(i,k))
                 probe[2] = probe[3][ipop.int_input("Nummer: ",len(probe[3]-1))]
             elif probe[3] == "+Mod":
-                print("Die Probe wird von der Modifikation erschwert.")
+                print("Die Probe kann von Modifikationen erschwert werden.")
                 harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
             elif probe[3] == "+MR":
                 print("Die Probe wird von der Magieresistenz des Ziels "
                         "erschwert.")
                 harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
+            elif probe[3] == "Eig":
+                print("Die dritte Eigenschaft der Probe kann frei gewählt "
+                    "werden.")
+                print("Welche Eigenschaft soll verwendet werden?")
+                probe[2] = ipop.choice_from_list(basis_eigenschaften,"Numme: ")
             else:
                 print("Kritischer Fehler in Talentlistenstruktur.")
                 print("Das vierte Feld in 'Proben' hat eine unbekannte "
