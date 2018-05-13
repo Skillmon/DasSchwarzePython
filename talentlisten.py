@@ -34,12 +34,17 @@ class Suche(object):# {{{
         return [ i for i,l in enumerate(liste) if re.search(pattern,l) != None ]
 # }}}
 
-class Probe(object):
+class Probe(object):# {{{
     def talent(self,name,stats,skill,harder=0,fullmatch=False):# {{{
-        self.probe(name,talentliste,stats,skill,fullmatch=fullmatch)# }}}
+        return self.probe(name, talentliste, stats, skill, "Welches", "Talent",
+                harder=harder, fullmatch=fullmatch)
+    # }}}
     def zauber(self,name,stats,skill,harder=0,fullmatch=False):# {{{
-        self.probe(name,zauberliste,stats,skill,fullmatch=fullmatch)# }}}
-    def probe(self,name,liste,stats,skill,harder=0,fullmatch=False):# {{{
+        return self.probe(name, zauberliste, stats, skill, "Welcher", "Zauber",
+                harder=harder, fullmatch=fullmatch)
+    # }}}
+    def probe(self,name,liste,stats,skill,welchers,talauber,harder=0,# {{{
+            fullmatch=False):
         if fullmatch:
             if name not in liste.namen:
                 print("'%s' nicht bekannt."%(name))
@@ -48,15 +53,45 @@ class Probe(object):
         else:
             matches = suche.suche(name, liste.namen)
             if len(matches) == 0:
-                print("Zauber '%s' nicht bekannt."%(name))
+                print(talauber+" '%s' nicht bekannt."%(name))
+                return False
             elif len(matches) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
-                print("Welcher Zauber ist gemeint?")
+                print(welchers+" "+talauber+" ist gemeint?")
                 for i,m in enumerate(matches):
-                    print("  %d: %s"%(i,talente.zauberliste.namen[m]))
+                    print("  %d: %s"%(i,liste.namen[m]))
                 entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
             else: entry = matches[0]
-        probe = liste.proben[entry]
+        probe = self.proben_eigenschaften(liste.namen[entry], liste,
+                fullmatch=True)
+        if probe:
+            harder = harder + probe[1]
+            probe = probe[0]
+        else: return False
+        return proben.probe3(
+                probe[0], probe[1], probe[2], harder=harder, skill=skill,
+                stats=stats)
+    # }}}
+    def proben_eigenschaften(self, name, liste, fullmatch=False):# {{{
+        if fullmatch:
+            if name not in liste.namen:
+                print("'%s' nicht bekannt."%(name))
+                return False
+            entry = liste.namen.index(name)
+        else:
+            matches = suche.suche(name, liste.namen)
+            if len(matches) == 0:
+                print("'%s' nicht bekannt."%(name))
+                return False
+            elif len(matches) != 1:
+                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
+                print("Was ist gemeint?")
+                for i, m in enumerate(matches):
+                    print("  %d: %s"%(i,liste.namen[m]))
+                entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
+            else: entry = matches[0]
+        probe  = liste.proben[entry]
+        harder = 0
         if len(probe) == 3: pass
         elif len(probe) == 4:# {{{
             if type(probe[3]) == list:
@@ -67,11 +102,11 @@ class Probe(object):
                 probe[2] = probe[3][ipop.int_input("Nummer: ",len(probe[3]-1))]
             elif probe[3] == "+Mod":
                 print("Die Probe wird von der Modifikation erschwert.")
-                harder = harder + int_input("Zusätzliche Erschwernis? ")
+                harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
             elif probe[3] == "+MR":
                 print("Die Probe wird von der Magieresistenz des Ziels "
                         "erschwert.")
-                harder = harder + int_input("Zusätzliche Erschwernis? ")
+                harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
             else:
                 print("Kritischer Fehler in Talentlistenstruktur.")
                 print("Das vierte Feld in 'Proben' hat eine unbekannte "
@@ -81,10 +116,9 @@ class Probe(object):
             print("Kritischer Fehler in Talentlistenstruktur.")
             print("Das Feld 'Proben' hat weder 3 noch 4 Elemente.")
             return False
-        return proben.probe3(
-                probe[0], probe[1], probe[2], harder=harder, skill=skill,
-                stats=stats)
+        return [probe[:3],harder]
     # }}}
+# }}}
 
 suche = Suche()
 probe = Probe()
@@ -428,24 +462,24 @@ zauberliste = Talentliste(namenUproben=(# {{{
 
 ## Alle Talente aus Wege der Helden ab Seite 315 mit zugehörigen Proben
 talentliste = Talentliste(namenUproben=(# {{{
-    ("Akrobatik",               ("mu","ge","kk"),       "körperlich"),
-    ("Athletik",                ("ge","ko","kk"),       "körperlich"),
-    ("Fliegen",                 ("mu","in","ge"),       "körperlich"),
-    ("Gaukeleien",              ("mu","ch","ff"),       "körperlich"),
-    ("Klettern",                ("mu","ge","kk"),       "körperlich"),
-    ("Körperbeherrschung",      ("mu","in","ge"),       "körperlich"),
-    ("Reiten",                  ("ch","ge","kk"),       "körperlich"),
-    ("Schleichen",              ("mu","in","ge"),       "körperlich"),
-    ("Schwimmen",               ("ge","ko","kk"),       "körperlich"),
-    ("Selbstbeherrschung",      ("mu","ko","kk"),       "körperlich"),
-    ("Sich Verstecken",         ("mu","in","ge"),       "körperlich"),
+    ("Akrobatik",               ("mu","ge","kk"),           "körperlich"),
+    ("Athletik",                ("ge","ko","kk"),           "körperlich"),
+    ("Fliegen",                 ("mu","in","ge"),           "körperlich"),
+    ("Gaukeleien",              ("mu","ch","ff"),           "körperlich"),
+    ("Klettern",                ("mu","ge","kk"),           "körperlich"),
+    ("Körperbeherrschung",      ("mu","in","ge"),           "körperlich"),
+    ("Reiten",                  ("ch","ge","kk"),           "körperlich"),
+    ("Schleichen",              ("mu","in","ge"),           "körperlich"),
+    ("Schwimmen",               ("ge","ko","kk"),           "körperlich"),
+    ("Selbstbeherrschung",      ("mu","ko","kk"),           "körperlich"),
+    ("Sich Verstecken",         ("mu","in","ge"),           "körperlich"),
     ("Singen",                  ("in","ch","",("ch","ko")), "körperlich"),
     ("Sinnenschärfe",           ("kl","in","",("in","ff")), "körperlich"),
-    ("Skifahren",               ("ge","ge","ko"),       "körperlich"),
-    ("Stimmen Imitieren",       ("kl","in","ch"),       "körperlich"),
-    ("Tanzen",                  ("ch","ge","ge"),       "körperlich"),
-    ("Taschendiebstahl",        ("mu","in","ff"),       "körperlich"),
-    ("Zechen",                  ("in","ko","kk"),       "körperlich"),
+    ("Skifahren",               ("ge","ge","ko"),           "körperlich"),
+    ("Stimmen Imitieren",       ("kl","in","ch"),           "körperlich"),
+    ("Tanzen",                  ("ch","ge","ge"),           "körperlich"),
+    ("Taschendiebstahl",        ("mu","in","ff"),           "körperlich"),
+    ("Zechen",                  ("in","ko","kk"),           "körperlich"),
 
     ("Betören",                 ("in","ch","ch"),       "gesellschaftlich"),
     ("Etikette",                ("kl","in","ch"),       "gesellschaftlich"),
@@ -459,18 +493,17 @@ talentliste = Talentliste(namenUproben=(# {{{
     ("Überzeugen",              ("kl","in","ch"),       "gesellschaftlich"),
 
     ("Fährtensuchen",           ("kl","in","",("in","ko")), "Natur"),
-    ("Fallenstellen",           ("kl","ff","kk"),       "Natur"),
-    ("Fesseln/Entfesseln",      ("ff","ge","kk"),       "Natur"),
-    ("Fischen/Angeln",          ("in","ff","kk"),       "Natur"),
-    ("Orientierung",            ("kl","in","in"),       "Natur"),
-    ("Wettervorhersage",        ("kl","in","in"),       "Natur"),
-    ("Wildnisleben",            ("in","ge","ko"),       "Natur"),
+    ("Fallenstellen",           ("kl","ff","kk"),           "Natur"),
+    ("Fesseln/Entfesseln",      ("ff","ge","kk"),           "Natur"),
+    ("Fischen/Angeln",          ("in","ff","kk"),           "Natur"),
+    ("Orientierung",            ("kl","in","in"),           "Natur"),
+    ("Wettervorhersage",        ("kl","in","in"),           "Natur"),
+    ("Wildnisleben",            ("in","ge","ko"),           "Natur"),
 
     ("Anatomie",                ("mu","kl","ff"),       "Wissen"),
     ("Baukunst",                ("kl","kl","ff"),       "Wissen"),
     ("Brett-/Kartenspiel",      ("kl","kl","in"),       "Wissen"),
     ("Geografie",               ("kl","kl","in"),       "Wissen"),
-    ("Geographie",              ("kl","kl","in"),       "Wissen"),
     ("Geschichtswissen",        ("kl","kl","in"),       "Wissen"),
     ("Gesteinskunde",           ("kl","in","ff"),       "Wissen"),
     ("Götter/Kulte",            ("kl","kl","in"),       "Wissen"),

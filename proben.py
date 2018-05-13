@@ -35,7 +35,7 @@ def set_stats(newstats):# {{{
 def probe1(st1,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain
     v1 = w20_1()
-    s1 = stats[st1]
+    s1 = (st1 if type(st1) == int else stats[st1])
     if not silent: print("%s %2d / %2d"%(st1,v1,s1))
     skarder = skill - harder
     rem = s1 + skarder - v1
@@ -57,36 +57,47 @@ def probe1(st1,harder=0,skill=0,silent=False,stats=stats):# {{{
 def probe3(st1,st2,st3,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain 
     v1,v2,v3 = w20_c(3)
-    s1 = stats[st1]
-    s2 = stats[st2]
-    s3 = stats[st3]
+    s1 = (st1 if type(st1) == int else stats[st1])
+    s2 = (st2 if type(st2) == int else stats[st2])
+    s3 = (st3 if type(st3) == int else stats[st3])
     skarder = skill - harder
     if not silent:
         print("%s %2d / %2d"%(st1,v1,s1))
         print("%s %2d / %2d"%(st2,v2,s2))
         print("%s %2d / %2d"%(st3,v3,s3))
-    if v1 == 20 or v2 == 20 or v3 == 20:
-        if not silent: print("Probe nicht bestanden")
+    num20 = ( (v1 == 20) + (v2 == 20) + (v3 == 20) )
+    if 1 < num20:
+        if not silent:
+            print("Probe nicht bestanden")
+            if 3 == num20: print("Spektakulärer Patzer")
         return False
     d1 = s1 - v1
     d2 = s2 - v2
     d3 = s3 - v3
+    num1 = ( (v1 == 1) + (v2 == 1) + (v3 == 1) )
     if skarder < 0:
-        if d1 + skarder < 0 or d2 + skarder < 0 or d3 + skarder < 0:
+        if num1 < 2 and \
+                ( d1 + skarder < 0 or d2 + skarder < 0 or d3 + skarder < 0 ):
             if not silent: print("Probe nicht bestanden")
             return False
         else:
-            if not silent: print("Probe bestanden")
+            if not silent:
+                print("Probe bestanden mit 1 übrig")
+                if num1 == 3: print("Spektakulärer Erfolg")
             return True
     rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
     remain = rem
     if rem >= 0:
         if not silent:
-            print("Probe bestanden",end="")
-            if skarder > 0: print(" mit %d übrig"%(rem),end="")
-            print("")
+            print("Probe bestanden mit %d übrig"%(max(1,rem)))
+            if num1 == 3: print("Spektakulärer Erfolg")
         return True
     else:
+        if num1 > 1:
+            if not silent:
+                print("Probe bestanden mit 1 übrig")
+                if num1 == 3: print("Spektakulärer Erfolg")
+            return True
         if not silent: print("Probe nicht bestanden")
         return False
 # }}}
@@ -147,25 +158,35 @@ def probe(st,harder=0,skill=0,silent=False,nonstop=False,stats=stats):# {{{
             return True
 # }}}
 
-def wahrscheinlich(st1,st2=False,st3=False,harder=0,skill=0,silent=False,# {{{
-        tries=1e5):
+def wahrscheinlich(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
+        stats=stats):
     skarder = skill - harder
+    s1 = (st1 if type(st1) == int else stats[st1])
+    s2 = (st2 if type(st2) == int else stats[st2])
+    s3 = (st3 if type(st3) == int else stats[st3])
     if skarder <= 0:
-        prob = ( stats[st1] + skarder ) / 20
-        if st2: prob = prob * ( stats[st2] + skarder ) / 20
-        if st3: prob = prob * ( stats[st3] + skarder ) / 20
+        prob = ( s1 + skarder ) * ( s2 + skarder ) * ( s3 + skarder ) / 8000
     else:
         prob = 0
-        for i in range(int(tries)):
-            prob = prob + probe(
-                    st1,st2=st2,st3=st3,harder=harder,skill=skill,silent=True)
-        prob = prob / tries
-        if tries <= 1e7: prob = round(prob, 2)
-        if not silent and tries <= 1e7: print("Ungefähre ",end="")
+        for w1 in range(1,21):
+            for w2 in range(1,21):
+                for w3 in range(1,21):
+                    num1  = (w1 ==  1) + (w2 ==  1) + (w3 ==  1)
+                    if num1 > 1:
+                        prob = prob + 1
+                        continue
+                    num20 = (w1 == 20) + (w2 == 20) + (w3 == 20)
+                    if num20 > 1: continue
+                    d1 = s1 - w1
+                    d2 = s2 - w2
+                    d3 = s3 - w3
+                    rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
+                    if rem >= 0: prob = prob + 1
+        prob = prob / 8000
     if not silent:
         print("Wahrscheinlichkeit des Bestehens: {0} %".format(
-            round(100 * prob, 3)))
-    return round(prob, 5)
+            round(100 * prob, 8)))
+    return prob
 # }}}
 
 # MU = "mu"

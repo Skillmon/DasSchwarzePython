@@ -5,16 +5,16 @@ from . import talentlisten as talente
 
 class Zauber(object):# {{{
     def __init__(self,probe,ZfW,name=False):
-        self.name = name
+        self.name  = name
         self.probe = probe
-        self.ZfW = ZfW
+        self.skill = ZfW
 #}}}
 
 class Talent(object):# {{{
     def __init__(self,probe,TaW,name=False):
-        self.name = name
+        self.name  = name
         self.probe = probe
-        self.TaW = TaW
+        self.skill = TaW
 #}}}
 
 class Held(object):# {{{
@@ -28,35 +28,44 @@ class Held(object):# {{{
             self.zauber = {}
             self.talente = {}
     # }}}
-    def zauber(self,name,harder=0):# {{{
-        matches = talente.suche.zauber(name)
+    def zauber(self, name, harder=0):# {{{
+        return self.__skill_probe(name, talente.suche.zauber,
+                talente.zauberliste.namen, self.eigenschaften.zauber, "Welcher",
+                "Zauber", talente.probe.zauber, harder=harder)
+    # }}}
+    def talent(self, name, harder=0):# {{{
+        return self.__skill_probe(name, talente.suche.talent,
+                talente.talentliste.namen, self.eigenschaften.talente,
+                "Welches", "Talent", talente.probe.talent, harder=harder)
+    # }}}
+    def __skill_probe(self, name, suche, talentliste, bekannt, welchers,# {{{
+            talauber, probe, harder=0):
+        matches = suche(name)
         if len(matches) == 0:
-            print("Zauber '%s' nicht bekannt."%(name))
+            print(talauber + " '%s' nicht bekannt."%(name))
         elif len(matches) != 1:
-            evtl = [ i for i in matches if talente.zauberliste.namen[i] in
-                    self.eigenschaften.zauber ]
+            evtl = [ i for i in matches if talentliste[i] in bekannt ]
             if len(evtl) == 0:
-                print("Held kennt Zauber '%s' nicht."%(name))
+                print("Held kennt "+talauber+" '%s' nicht."%(name))
                 return False
             elif len(evtl) != 1:
                 print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
-                print("Welcher Zauber ist gemeint?")
+                print(welchers+" "+talauber+" ist gemeint?")
                 for i,m in enumerate(evtl):
-                    print("  %d: %s"%(i,talente.zauberliste.namen[m]))
+                    print("  %d: %s"%(i,talentliste[m]))
                 zz = evtl[ipop.int_input("Nummer: ",len(matches)-1)]
-                name = talente.zauberliste.namen[zz]
-            else: name = talente.zauberliste.namen[evtl[0]]
+                name = talentliste[zz]
+            else: name = talentliste[evtl[0]]
         else:
-            zz = talente.zauberliste.namen[matches[0]]
-            if zz not in self.eigenschaften.zauber:
-                print("Held kennt Zauber '%s' nicht."%(name))
+            zz = talentliste[matches[0]]
+            if zz not in bekannt:
+                print("Held kennt "+talauber+" '%s' nicht."%(name))
                 return False
             name = zz
         print("Würfle Probe auf '%s'"%(name))
-        skill = self.eigenschaften.zauber[name].ZfW
+        skill = bekannt[name].skill
         stats = self.eigenschaften.basis
-        return talente.probe.zauber(name, stats, skill, harder=harder,
-                fullmatch=True)
+        return probe(name, stats, skill, harder=harder, fullmatch=True)
     # }}}
     def probe(self, st, harder=0, skill=0, silent=False, nonstop=False):# {{{
         ret = proben.probe(
@@ -64,80 +73,108 @@ class Held(object):# {{{
                 stats=self.eigenschaften.basis)
         return ret
     # }}}
-    def neues_talent(self,name,TaW,fullmatch=False):# {{{
+    def neues_talent(self, name, TaW, fullmatch=False):# {{{
+        return self.__neuer_skill(name, TaW, talente.suche.talent,
+                talente.talentliste, self.eigenschaften.talente, "Welches",
+                "Talent", Talent, fullmatch=fullmatch)
+    # }}}
+    def neuer_zauber(self, name, ZfW, fullmatch=False):# {{{
+        return self.__neuer_skill(name, ZfW, talente.suche.zauber,
+                talente.zauberliste, self.eigenschaften.zauber, "Welcher",
+                "Zauber", Zauber, fullmatch=fullmatch)
+    # }}}
+    def __neuer_skill(self, name, skill, suche, talentliste, bekannt,# {{{
+            welchers, talauber, Talauber, fullmatch=False):
         if fullmatch:
-            if name not in talente.talentliste.namen:
-                print("Talent '%s' nicht bekannt."%(name))
+            if name not in talentliste.namen:
+                print(talauber+" '%s' nicht bekannt."%(name))
                 return False
-            entry = talente.talentliste.namen.index(name)
+            entry = talentliste.namen.index(name)
         else:
-            matches = talente.suche.talent(name)
+            matches = suche(name)
             if len(matches) == 0:
-                print("Talent '%s' nicht bekannt."%(name))
+                print(talauber+" '%s' nicht bekannt."%(name))
                 return False
             elif len(matches) != 1:
-                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
-                print("Welches Talent ist gemeint?")
+                print("'%s' koonte nicht eindeutig ermittelt werden!"%(name))
+                print(welchers+" "+talauber+" ist gemeint?")
                 for i,m in enumerate(matches):
-                    print("  %d: %s"%(i,talente.talentliste.namen[m]))
-                entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
+                    print("  %d: %s"%(i,talentliste.namen[m]))
+                entry = matches[ipop.int_input("Nummer: ",len(matches) - 1)]
             else: entry = matches[0]
-        name = talente.talentliste.namen[entry]
-        if name in self.eigenschaften.talente:
-            print("Talent bereits bekannt.")
+        name = talentliste.namen[entry]
+        if name in bekannt:
+            print(talauber+" bereits bekannt.")
             return False
-        probe = talente.talentliste.proben[entry]
-        self.eigenschaften.talente[name] = Talent(probe, TaW, name=name)
+        probe = talentliste.proben[entry]
+        bekannt[name] = Talauber(probe, skill, name=name)
         return True
     # }}}
-    def neuer_zauber(self,name,ZfW,fullmatch=False):# {{{
-        if fullmatch:
-            if name not in talente.zauberliste.namen:
-                print("Talent '%s' nicht bekannt."%(name))
-                return False
-            entry = talente.zauberliste.namen.index(name)
-        else:
-            matches = talente.suche.zauber(name)
-            if len(matches) == 0:
-                print("Zauber '%s' nicht bekannt."%(name))
-                return False
-            elif len(matches) != 1:
-                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
-                print("Welcher Zauber ist gemeint?")
-                for i,m in enumerate(matches):
-                    print("  %d: %s"%(i,talente.zauberliste.namen[m]))
-                entry = matches[ipop.int_input("Nummer: ",len(matches)-1)]
-            else: entry = matches[0]
-        name = talente.zauberliste.namen[entry]
-        if name in self.eigenschaften.zauber:
-            print("Zauber bereits bekannt.")
-            return False
-        probe = talente.zauberliste.proben[entry]
-        self.eigenschaften.zauber[name] = Zauber(probe, ZfW, name=name)
-        return True
+    def liste_talente(self, probe=False):# {{{
+        return self.__liste_skills(self.eigenschaften.talente, probe=probe)
     # }}}
-    def liste_talente(self):# {{{
+    def liste_zauber(self, probe=False):# {{{
+        return self.__liste_skills(self.eigenschaften.zauber, probe=probe)
+    # }}}
+    def __liste_skills(self, liste, probe=False):# {{{
         l = 0
-        for k, v in self.eigenschaften.talente.items():
+        for k, v in liste.items():
             l = max(l,len(k))
-        for k, v in self.eigenschaften.talente.items():
+        for k, v in liste.items():
             print(k,end="")
             for i in range(l - len(k)):
                 print(" ",end="")
             print("  ",end="")
-            print("%2d"%(v.ZfW))
+            print("%2d"%(v.skill),end="")
+            if probe:
+                print("    ",end="")
+                print(v.probe,end="")
+            print("")
     # }}}
-    def liste_zauber(self):# {{{
-        l = 0
-        for k, v in self.eigenschaften.zauber.items():
-            l = max(l,len(k))
-        for k, v in self.eigenschaften.zauber.items():
-            print(k,end="")
-            for i in range(l - len(k)):
-                print(" ",end="")
-            print("  ",end="")
-            print("%2d"%(v.ZfW))
-    # }}}
+    def wahrscheinlich_zauber(self,name,harder=0):
+        return self.__wahrscheinlich(name, talente.suche.zauber,
+                talente.zauberliste, self.eigenschaften.zauber, "Welcher",
+                "Zauber", harder=harder)
+    def wahrscheinlich_talent(self,name,harder=0):
+        return self.__wahrscheinlich(name, talente.suche.talent,
+                talente.talentliste, self.eigenschaften.talente, "Welches",
+                "Talent", harder=harder)
+    def __wahrscheinlich(self, name, suche, talentliste, bekannt,
+            welchers, talauber, harder=0):
+        matches = suche(name)
+        if len(matches) == 0:
+            print(talauber + " '%s' nicht bekannt."%(name))
+            return False
+        elif len(matches) != 1:
+            evtl = [ i for i in matches if talentliste.namen[i] in bekannt ]
+            if len(evtl) == 0:
+                print("Held kennt "+talauber+" '%s' nicht."%(name))
+                return False
+            elif len(evtl) != 1:
+                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
+                print(welchers+" "+talauber+" ist gemeint?")
+                for i, m in enumerate(evtl):
+                    print("  %d: %s"%(i,talentliste.namen[m]))
+                zz = evtl[ipop.int_input("Nummer: ",len(matches)-1)]
+                name = talentliste.namen[zz]
+            else: name = talentliste.namen[evtl[0]]
+        else:
+            zz = talentliste.namen[matches[0]]
+            if zz not in bekannt:
+                print("Held kennt "+talauber+" '%s' nicht."%(name))
+                return False
+            name = zz
+        print("Ermittle Wahrscheinlichkeit von '%s'"%(name))
+        skill = bekannt[name].skill
+        stats = self.eigenschaften.basis
+        probe = talente.probe.proben_eigenschaften(name, talentliste,
+                fullmatch=True)
+        if probe:
+            harder = harder + probe[1]
+            probe = probe[0]
+        else: return False
+        return proben.wahrscheinlich(probe[0], probe[1], probe[2],
+                harder=harder, skill=skill, stats=stats)
     def aktiv(self):# {{{
         """Setzt die momentan vom Submodule 'proben' verwendeten stats auf die
         Basiseigenschaften des momentanen Helden"""
