@@ -10,16 +10,24 @@ class Talentliste(object):# {{{
             self.namen     = []
             self.proben    = []
             self.kategorie = []
+            self.anmerkung = []
         else:
             self.namen     = [ nUp[0] for nUp in namenUproben ]
             self.proben    = [ nUp[1] for nUp in namenUproben ]
             self.kategorie = [ (False if len(nUp) < 3 else nUp[2])
                     for nUp in namenUproben ]
+            self.anmerkung = [ (False if len(nUp) < 4 else nUp[3])
+                    for nUp in namenUproben ]
     def add(self,nameUprobe):
         self.namen.append(nameUprobe[0])
         self.proben.append(nameUprobe[1])
-        if len(nameUprobe) < 3: self.kategorie.append(False)
-        else: self.kategorie.append(nameUprobe[2])
+        if len(nameUprobe) < 3:
+            self.kategorie.append(False)
+            self.anmerkung.append(False)
+        else:
+            self.kategorie.append(nameUprobe[2])
+            if len(nameUprobe) > 3: self.anmerkung.append(nameUprobe[3])
+            else: self.anmerkung.append(False)
 # }}}
 
 class Suche(object):# {{{
@@ -31,6 +39,10 @@ class Suche(object):# {{{
         return self.suche(name,zauberliste.namen)
     def zauber_kategorie(self,name):
         return self.suche(name,talentliste.kategorie)
+    def gabe(self,name):
+        return self.suche(name,gabenliste.namen)
+    def gabe_kategorie(self,name):
+        return self.suche(name,gabenliste.kategorie)
     def suche(self,name,liste):
         pattern = re.compile(".*" + name + ".*",re.I)
         return [ i for i,l in enumerate(liste) if re.search(pattern,l) != None ]
@@ -43,6 +55,10 @@ class Probe(object):# {{{
     # }}}
     def zauber(self,name,stats,skill,harder=0,fullmatch=False):# {{{
         return self.probe(name, zauberliste, stats, skill, "Welcher", "Zauber",
+                harder=harder, fullmatch=fullmatch)
+    # }}}
+    def gabe(self,name,stats,skill,harder=0,fullmatch=False):# {{{
+        return self.probe(name, gabenliste, stats, skill, "Welche", "Gabe",
                 harder=harder, fullmatch=fullmatch)
     # }}}
     def probe(self,name,liste,stats,skill,welchers,talauber,harder=0,# {{{
@@ -92,7 +108,7 @@ class Probe(object):# {{{
         harder = 0
         if len(probe) == 3: pass
         elif len(probe) == 4:# {{{
-            if type(probe[3]) == list:
+            if type(probe[3]) == list or type(probe[3]) == tuple:
                 print("Die dritte Eigenschaft der Probe scheint wählbar.")
                 print("Welche Eigenschaft soll verwendet werden?")
                 probe[2] = ipop.choice_from_list(probe[3])
@@ -126,11 +142,16 @@ probe = Probe()
 
 ## Alle Zauber aus dem Liber Cantiones mit zugehörigen Proben
 zauberliste = Talentliste(namenUproben=(# {{{
-    ("Abvenenum reine Speise",              ("kl","kl","ff","+Mod")),
-    ("Accuratum Zaubernadel",               ("kl","ch","ff","+Mod")),
-    ("Adamantium Erzstruktur",              ("kl","ff","ko",)),
-    ("Adlerauge Luchsenohr",                ("kl","in","ff",)),
-    ("Adlerschwinge Wolfsgestalt",          ("mu","in","ge","+Mod")),
+    ("Abvenenum reine Speise",              ("kl","kl","ff","+Mod"), "Objekt",
+        "Kosten: 4 AsP (Sch. 3) pro Mahlzeit für 10 Pers."),
+    ("Accuratum Zaubernadel",               ("kl","ch","ff","+Mod"), "Objekt",
+        "Kosten: 4 AsP pro Stein Gewicht, min. 4"),
+    ("Adamantium Erzstruktur",              ("kl","ff","ko",),
+        "Objekt, Elementar (Erz)", "Kosten: 5 AsP +2 pro angef. Stein Gewicht"),
+    ("Adlerauge Luchsenohr",                ("kl","in","ff",),
+        "Hellsicht, Eigenschaft", "Kosten: 4 AsP"),
+    ("Adlerschwinge Wolfsgestalt",          ("mu","in","ge","+Mod"), "Form",
+        "Kosten: 4 AsP +2 AsP/SR bei amphib., +3 AsP/SR bei wasser. o. flieg."),
     ("Aeolitus Windgebraus",                ("kl","ch","ko",)),
     ("Aerofugo Vakuum",                     ("mu","ko","kk",)),
     ("Aerogelo Atemqual",                   ("mu","in","ko",)),
@@ -495,6 +516,7 @@ talentliste = Talentliste(namenUproben=(# {{{
 
     ("Fährtensuchen",           ("kl","in","",("in","ko")), "Natur"),
     ("Fallenstellen",           ("kl","ff","kk"),           "Natur"),
+    # ("Fallen stellen",          ("kl","ff","kk"),           "Natur"),
     ("Fesseln/Entfesseln",      ("ff","ge","kk"),           "Natur"),
     ("Fischen/Angeln",          ("in","ff","kk"),           "Natur"),
     ("Orientierung",            ("kl","in","in"),           "Natur"),
@@ -575,4 +597,17 @@ talentliste = Talentliste(namenUproben=(# {{{
     ("Webkunst",                ("ff","ff","kk"),       "Handwerk"),
     ("Winzer",                  ("kl","ff","kk"),       "Handwerk"),
     ("Zimmermann",              ("kl","ff","kk"),       "Handwerk"),
+    ))# }}}
+
+## Gaben mit zugehörigen Proben
+gabenliste = Talentliste(namenUproben=(# {{{
+    ("Empathie",                ("mu","in","in"),       "Gaben"),
+    ("Gefahreninstinkt",        ("kl","in","in"),       "Gaben"),
+    ("Geräuschhexerei",         ("in","ch","ko"),       "Gaben"),
+    ("Kräfteschub",             ("mu","in","ko"),       "Gaben"),
+    ("Magiegespür",             ("mu","in","in"),       "Gaben"),
+    ("Prophezeien",             ("in","in","ch"),       "Gaben"),
+    ("Talentschub",             ("mu","in","ko"),       "Gaben"),
+    ("Tierempathie",            ("mu","in","ch"),       "Gaben"),
+    ("Zwergennase",             ("ff","in","in"),       "Gaben"),
     ))# }}}

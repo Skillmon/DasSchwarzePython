@@ -1,8 +1,8 @@
-from .proben import *
-from .held import *
+from ..proben import *
+from ..held import *
 
 # Meljow initialisieren
-meljow = Held()
+meljow = Held("Meljow vom Berg", "Meljow")
 
 ## Basiseigenschaften {{{
 meljow.eigenschaften.basis = \
@@ -45,22 +45,23 @@ meljow.neues_talent("Singen",                 0)
 meljow.neues_talent("Sinnenschärfe",          4)
 meljow.neues_talent("Tanzen",                 0)
 meljow.neues_talent("Zechen",                 1)
-meljow.neues_talent("Reiten",                 2)
+meljow.neues_talent("Reiten",                 3)
 meljow.neues_talent("Menschenkenntnis",       5)
 meljow.neues_talent("Überreden",              4)
 meljow.neues_talent("Betören",                5)
 meljow.neues_talent("Etikette",               6)
+meljow.neues_talent("Gassenwissen",          -2)
 meljow.neues_talent("Lehren",                 3)
 meljow.neues_talent("Überzeugen",             2)
-meljow.neues_talent("Fährtensuche",           0)
-meljow.neues_talent("Orientierung",           2)
-meljow.neues_talent("Wildnisleben",           3)
-meljow.neues_talent("Götter/Kulte",           7)
+meljow.neues_talent("Fährtensuche",           2)
+meljow.neues_talent("Orientierung",           5)
+meljow.neues_talent("Wildnisleben",           4)
+meljow.neues_talent("Götter/Kulte",           9)
 meljow.neues_talent("Rechnen",                7)
-meljow.neues_talent("Sagen/Legenden",         6)
+meljow.neues_talent("Sagen/Legenden",         8)
 meljow.neues_talent("Anatomie",              -3)
-meljow.neues_talent("Geografie",              3)
-meljow.neues_talent("Geschichtswissen",       4)
+meljow.neues_talent("Geografie",              4)
+meljow.neues_talent("Geschichtswissen",       6)
 meljow.neues_talent("Heraldik",               5)
 meljow.neues_talent("Kriegskunst",            4)
 meljow.neues_talent("Magiekunde",             5)
