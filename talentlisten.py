@@ -3,6 +3,12 @@ from . import ipop
 from . import proben
 
 basis_eigenschaften = ("mu","kl","in","ch","ff","ge","ko","kk")
+erst = ("erste", "zweite", "dritte")
+
+BEx2 = "Das Talent wird um die zweifache BE erschwert."
+BEx1 = "Das Talent wird um die einfache BE erschwert."
+def BE(inp,add="einfache"):
+    return "Das Talent wird um die %s BE%+d erschwert."%(add,inp)
 
 class Talentliste(object):# {{{
     def __init__(self,namenUproben=False):
@@ -74,7 +80,9 @@ class Probe(object):# {{{
                 print(talauber+" '%s' nicht bekannt."%(name))
                 return False
             elif len(matches) != 1:
-                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
+                if type(name) == str and len(name) > 0:
+                    print("'%s' konnte nicht eindeutig ermittelt werden!"%(
+                        name))
                 print(welchers+" "+talauber+" ist gemeint?")
                 entry = ipop.choice_from_list(matches, print_list=liste.namen)
             else: entry = matches[0]
@@ -100,19 +108,23 @@ class Probe(object):# {{{
                 print("'%s' nicht bekannt."%(name))
                 return False
             elif len(matches) != 1:
-                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
+                if type(name) == str and len(name) > 0:
+                    print("'%s' konnte nicht eindeutig ermittelt werden!"%(
+                        name))
                 print("Was ist gemeint?")
                 entry = ipop.choice_from_list(matches, print_list=liste.namen)
             else: entry = matches[0]
         probe  = list(liste.proben[entry])
         harder = 0
-        if len(probe) == 3: pass
+        if len(probe) == 3:
+            for i in range(len(probe)):
+                if type(probe[i]) == list or type(probe[i]) == tuple:
+                    print("Die %s Eigenschaft der Probe scheint wählbar."%(
+                        erst[i]))
+                    print("Welche Eigenschaft soll verwendet werden?")
+                    probe[i] = ipop.choice_from_list(probe[i])
         elif len(probe) == 4:# {{{
-            if type(probe[3]) == list or type(probe[3]) == tuple:
-                print("Die dritte Eigenschaft der Probe scheint wählbar.")
-                print("Welche Eigenschaft soll verwendet werden?")
-                probe[2] = ipop.choice_from_list(probe[3])
-            elif probe[3] == "+Mod":
+            if probe[3] == "+Mod":
                 print("Die Probe kann von Modifikationen erschwert werden.")
                 harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
             elif probe[3] == "+MR":
@@ -128,10 +140,28 @@ class Probe(object):# {{{
                 print("Kritischer Fehler in Talentlistenstruktur.")
                 print("Das vierte Feld in 'Proben' hat eine unbekannte "
                         "Struktur.")
+                return False
         # }}}
+        elif len(probe) == 5:
+            if probe[3] == True:
+                print(probe[4])
+                harder = harder + ipop.int_input("Zusätzliche Erschwernis? ")
+            else:
+                print("Kritischer Fehler in Talentlistenstruktur.")
+                print("Das vierte Feld in 'Proben' hat eine unbekannte "
+                        "Struktur.")
+                return False
+        elif len(probe) == 1:
+            if type(probe[0]) == str:
+                return self.proben_eigenschaften(probe[0], liste,
+                        fullmatch=False)
+            else:
+                print("Kritischer Fehler in Talentlistenstruktur.")
+                print("Das einzige Feld in 'Proben' ist kein String.")
+                return False
         else:
             print("Kritischer Fehler in Talentlistenstruktur.")
-            print("Das Feld 'Proben' hat weder 3 noch 4 Elemente.")
+            print("Das Feld 'Proben' hat weder 1, 3, 4 noch 5 Elemente.")
             return False
         return [probe[:3],harder]
     # }}}
@@ -168,7 +198,7 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Armatrutz",                           ("in","ge","ko",)),
     ("Archofaxius",                         ("Ignifaxius",)),
     ("Atemnot",                             ("mu","ko","kk","+MR")),
-    ("Attributo",                           ("kl","ch","","Eig")),
+    ("Attributo",                           ("kl","ch",basis_eigenschaften)),
     ("Aufgeblasen abgehoben",               ("ch","kk","ko","+MR")),
     ("Auge des Limbus",                     ("mu","ko","kk",)),
     ("Aureolus Güldenglanz",                ("in","ch","ff",)),
@@ -264,7 +294,7 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Haselbusch und Ginsterkraut",         ("ch","ff","ko",)),
     ("Heilkraft bannen",                    ("kl","ch","ff","+Mod")),
     ("Hellsicht trüben",                    ("kl","in","ch","+MR")),
-    ("Herbeirufung vereiteln",              ("mu","in","ch","+ Mod")),
+    ("Herbeirufung vereiteln",              ("mu","in","ch","+Mod")),
     ("Herr über das Tierreich",             ("mu","mu","ch","+MR")),
     ("Herzschlag ruhe!",                    ("mu","ch","kk","+MR")),
     ("Hexenblick",                          ("in","in","ch",)),
@@ -382,7 +412,7 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Radau",                               ("mu","ch","ko",)),
     ("Reflectimago Spiegelschein",          ("kl","ch","ff",)),
     ("Reptilea Natternnest",                ("mu","in","ch",)),
-    ("Respondami Wahrheitszwang",           ("mu","in","ch",)),
+    ("Respondami Wahrheitszwang",           ("mu","in","ch","+MR")),
     ("Reversalis Revidum",                  ("kl","in","ch",)),
     ("Ruhe Körper, ruhe Geist",             ("kl","ch","ko",)),
 
@@ -484,24 +514,24 @@ zauberliste = Talentliste(namenUproben=(# {{{
 
 ## Alle Talente aus Wege der Helden ab Seite 315 mit zugehörigen Proben
 talentliste = Talentliste(namenUproben=(# {{{
-    ("Akrobatik",               ("mu","ge","kk"),           "körperlich"),
-    ("Athletik",                ("ge","ko","kk"),           "körperlich"),
-    ("Fliegen",                 ("mu","in","ge"),           "körperlich"),
-    ("Gaukeleien",              ("mu","ch","ff"),           "körperlich"),
-    ("Klettern",                ("mu","ge","kk"),           "körperlich"),
-    ("Körperbeherrschung",      ("mu","in","ge"),           "körperlich"),
-    ("Reiten",                  ("ch","ge","kk"),           "körperlich"),
-    ("Schleichen",              ("mu","in","ge"),           "körperlich"),
-    ("Schwimmen",               ("ge","ko","kk"),           "körperlich"),
-    ("Selbstbeherrschung",      ("mu","ko","kk"),           "körperlich"),
-    ("Sich Verstecken",         ("mu","in","ge"),           "körperlich"),
-    ("Singen",                  ("in","ch","",("ch","ko")), "körperlich"),
-    ("Sinnenschärfe",           ("kl","in","",("in","ff")), "körperlich"),
-    ("Skifahren",               ("ge","ge","ko"),           "körperlich"),
-    ("Stimmen Imitieren",       ("kl","in","ch"),           "körperlich"),
-    ("Tanzen",                  ("ch","ge","ge"),           "körperlich"),
-    ("Taschendiebstahl",        ("mu","in","ff"),           "körperlich"),
-    ("Zechen",                  ("in","ko","kk"),           "körperlich"),
+    ("Akrobatik",               ("mu","ge","kk"),             "körperlich"),
+    ("Athletik",                ("ge","ko","kk",True,BEx2),   "körperlich"),
+    ("Fliegen",                 ("mu","in","ge"),             "körperlich"),
+    ("Gaukeleien",              ("mu","ch","ff"),             "körperlich"),
+    ("Klettern",                ("mu","ge","kk",True,BEx2),   "körperlich"),
+    ("Körperbeherrschung",      ("mu","in","ge",True,BEx2),   "körperlich"),
+    ("Reiten",                  ("ch","ge","kk",True,BE(-2)), "körperlich"),
+    ("Schleichen",              ("mu","in","ge"),             "körperlich"),
+    ("Schwimmen",               ("ge","ko","kk",True,BEx2),   "körperlich"),
+    ("Selbstbeherrschung",      ("mu","ko","kk"),             "körperlich"),
+    ("Sich Verstecken",         ("mu","in","ge",True,BE(-2)), "körperlich"),
+    ("Singen",                  ("in","ch",("ch","ko")),   "körperlich"),
+    ("Sinnenschärfe",           ("kl","in",("in","ff")),   "körperlich"),
+    ("Skifahren",               ("ge","ge","ko"),             "körperlich"),
+    ("Stimmen Imitieren",       ("kl","in","ch"),             "körperlich"),
+    ("Tanzen",                  ("ch","ge","ge",True,BEx2),   "körperlich"),
+    ("Taschendiebstahl",        ("mu","in","ff"),             "körperlich"),
+    ("Zechen",                  ("in","ko","kk"),             "körperlich"),
 
     ("Betören",                 ("in","ch","ch"),       "gesellschaftlich"),
     ("Etikette",                ("kl","in","ch"),       "gesellschaftlich"),
@@ -514,7 +544,7 @@ talentliste = Talentliste(namenUproben=(# {{{
     ("Überreden",               ("mu","in","ch"),       "gesellschaftlich"),
     ("Überzeugen",              ("kl","in","ch"),       "gesellschaftlich"),
 
-    ("Fährtensuchen",           ("kl","in","",("in","ko")), "Natur"),
+    ("Fährtensuchen",           ("kl","in",("in","ko")), "Natur"),
     ("Fallenstellen",           ("kl","ff","kk"),           "Natur"),
     # ("Fallen stellen",          ("kl","ff","kk"),           "Natur"),
     ("Fesseln/Entfesseln",      ("ff","ge","kk"),           "Natur"),

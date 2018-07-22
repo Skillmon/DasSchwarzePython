@@ -23,6 +23,7 @@ def w20(num=1):# {{{
 # }}}
 def w20_1(): return random.randint(1,20)
 def w20_c(num=1): return [ random.randint(1,20) for i in range(num) ]
+def odd_die(sides, num=1): return [random.randint(1,sides) for i in range(num)]
 
 # Meljow Stats (leider hier noch nötig, gute Lösung für Proben etc. gesucht)
 # stats={"mu":13,"kl":14,"in":13,"ch":14,"ff":12,"ge":13,"ko":13,"kk":12}

@@ -72,6 +72,10 @@ witzbold.neues_talent("Schlösser Knacken",3)
 witzbold.neues_talent("Schneidern",1)
 # }}}
 
+## Gaben {{{
+witzbold.neue_gabe("Geräuschhexerei", 3)
+# }}}
+
 ## globalisieren {{{
 witzbold.aktiv()
 # }}}

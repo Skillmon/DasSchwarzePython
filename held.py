@@ -55,17 +55,17 @@ class Held(object):# {{{
             self.talente = {}
             self.gaben   = {}
     # }}}
-    def zauber(self, name, harder=0):# {{{
+    def zauber(self, name='', harder=0):# {{{
         return ipop.trywrap(self._skill_probe,(name, talente.suche.zauber,
                 talente.zauberliste.namen, self.eigenschaften.zauber, "Zauber",
                 talente.probe.zauber, harder))
     # }}}
-    def talent(self, name, harder=0):# {{{
+    def talent(self, name='', harder=0):# {{{
         return ipop.trywrap(self._skill_probe,(name, talente.suche.talent,
                 talente.talentliste.namen, self.eigenschaften.talente, "Talent",
                 talente.probe.talent, harder))
     # }}}
-    def gabe(self, name, harder=0):# {{{
+    def gabe(self, name='', harder=0):# {{{
         return ipop.trywrap(self._skill_probe,(name, talente.suche.gabe,
                 talente.gabenliste.namen, self.eigenschaften.gaben, "Gabe",
                 talente.probe.gabe, harder))
@@ -164,17 +164,17 @@ class Held(object):# {{{
                 print(v.probe,end="")
             print("")
     # }}}
-    def chance_zauber(self,name,harder=0):# {{{
+    def chance_zauber(self,name='',harder=0):# {{{
         return ipop.trywrap(self._chance,(name, talente.suche.zauber,
                 talente.zauberliste, self.eigenschaften.zauber, "Zauber",
                 harder))
     # }}}
-    def chance_talent(self,name,harder=0):# {{{
+    def chance_talent(self,name='',harder=0):# {{{
         return ipop.trywrap(self._chance,(name, talente.suche.talent,
                 talente.talentliste, self.eigenschaften.talente, "Talent",
                 harder))
     # }}}
-    def chance_gaben(self,name,harder=0):# {{{
+    def chance_gaben(self,name='',harder=0):# {{{
         return ipop.trywrap(self._chance,(name, talente.suche.gabe,
                 talente.gabenliste, self.eigenschaften.gaben, "Gabe",
                 harder))
@@ -235,7 +235,9 @@ class Held(object):# {{{
                 print(" kennt %s '%s' nicht."%(talauber, name))
                 return -1
             elif len(evtl) != 1:
-                print("'%s' konnte nihct eindeutig ermittelt werden!"%(name))
+                if len(name) > 0:
+                    print("'%s' konnte nicht eindeutig ermittelt werden!"%(
+                        name))
                 print("Welche%s %s ist gemeint?"%(
                     msg_endung_welche[talauber], talauber))
                 name = ipop.choice_from_list(evtl, print_list=talentliste,
