@@ -37,126 +37,123 @@ def probe1(st1,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain
     v1 = w20_1()
     s1 = (st1 if type(st1) == int else stats[st1])
-    if not silent: print("%s %2d / %2d"%(st1,v1,s1))
     skarder = skill - harder
     rem = s1 + skarder - v1
     remain = rem
+    if not silent:
+        if type(st1) == str: print(st1,end="")
+        else: print("  ",end="")
+        print(" %2d / %2d"%(v1,s1),end="")
+        if skarder < 0: print(" - %2d"%(skarder))
+        else: print("")
     if v1 == 20:
         if not silent: print("Probe nicht bestanden")
         return False
+    if v1 == 1:
+        if not silent: print("Probe bestanden")
+        remain = max(1,min(skill,rem))
+        return True
     if rem >= 0:
         if not silent:
             print("Probe bestanden",end="")
-            if skarder > 0: print(" mit %d übrig"%(min(skarder,rem)),end="")
+            if skarder > 0:
+                print(" mit %d übrig"%(min(min(skill,skarder),rem)),end="")
             print("")
         return True
     else:
-        if not silent: print("Probe nicht bestanden")
+        if not silent: print("Probe nicht bestanden mit %d zuviel"%(-rem))
         return False
 # }}}
 
 def probe3(st1,st2,st3,harder=0,skill=0,silent=False,stats=stats):# {{{
     global remain 
-    v1,v2,v3 = w20_c(3)
-    s1 = (st1 if type(st1) == int else stats[st1])
-    s2 = (st2 if type(st2) == int else stats[st2])
-    s3 = (st3 if type(st3) == int else stats[st3])
+    v = w20_c(3)
+    st = (st1,st2,st3)
+    s = [ (st[i] if type(st[i]) == int else stats[st[i]]) for i in range(3) ]
     skarder = skill - harder
     if not silent:
-        print("%s %2d / %2d"%(st1,v1,s1))
-        print("%s %2d / %2d"%(st2,v2,s2))
-        print("%s %2d / %2d"%(st3,v3,s3))
-    num20 = ( (v1 == 20) + (v2 == 20) + (v3 == 20) )
-    if 1 < num20:
-        if not silent:
-            print("Probe nicht bestanden")
-            if 3 == num20: print("Spektakulärer Patzer")
-        return False
-    d1 = s1 - v1
-    d2 = s2 - v2
-    d3 = s3 - v3
-    num1 = ( (v1 == 1) + (v2 == 1) + (v3 == 1) )
+        for i in range(3):
+            if type(st[i]) == str: print(st[i],end=" ")
+            else: print("  ",end=" ")
+            print("%2d / %2d"%(v[i],s[i]),end=" ")
+            if skarder < 0: print("- %d"%(skarder))
+            else: print("")
+    zwanzigen = v.count(20)
+    einsen = v.count(1)  
+    failed = 0
     if skarder < 0:
-        if num1 < 2 and \
-                ( d1 + skarder < 0 or d2 + skarder < 0 or d3 + skarder < 0 ):
-            if not silent: print("Probe nicht bestanden")
-            return False
-        else:
-            if not silent:
-                print("Probe bestanden mit 1 übrig")
-                if num1 == 3: print("Spektakulärer Erfolg")
-            return True
-    rem = skarder + min(0,d1) + min(0,d2) + min(0,d3)
-    remain = rem
-    if rem >= 0:
-        if not silent:
-            print("Probe bestanden mit %d übrig"%(max(1,rem)))
-            if num1 == 3: print("Spektakulärer Erfolg")
-        return True
+        rem = 1
+        for i in range(3):
+            if s[i] + skarder < v[i]: failed += v[i] - s[i] - skarder
     else:
-        if num1 > 1:
-            if not silent:
-                print("Probe bestanden mit 1 übrig")
-                if num1 == 3: print("Spektakulärer Erfolg")
-            return True
-        if not silent: print("Probe nicht bestanden")
-        return False
+        rem = skarder
+        for i in range(3):
+            if v[i] > s[i]: rem -= v[i] - s[i]
+        failed = -rem
+    return _probe_printout(skill,rem,failed,einsen,zwanzigen,3)
 # }}}
 
 def probe(st,harder=0,skill=0,silent=False,nonstop=False,stats=stats):# {{{
     global remain
     if type(st) == str or type(st) == int: st = (st,)
     skarder = skill - harder
-    failed = False
+    failed = 0
+    zwanzigen = 0
+    einsen = 0
     if skarder < 0:
+        rem = 1
         for stat in st:
-            if type(stat) == str:
-                s = stats[stat]
-                if not silent: print(stat,end=" ")
-            else:
-                s = stat
-                if not silent: print("  ",end=" ")
-            v = w20_1()
-            if not silent: print("%2d / %2d - %2d"%(v, s, abs(skarder)))
-            if s + skarder < v or v == 20:
-                if not nonstop:
-                    if not silent: print("Probe nicht bestanden")
-                    return False
-                else: failed = True
-        if failed:
-            if not silent: print("Probe nicht bestanden")
-            return False
-        else:
-            if not silent: print("Probe bestanden")
-            remain = 0
-            return True
+            s,v = _prope_stat(stat,silent)
+            if not silent: print("%2d / %2d - %2d"%(v,s,abs(skarder)))
+            if v == 20: zwanzigen += 1
+            elif v == 1: einsen += 1
+            if s + skarder < v: failed += v - s - skarder
     else:
         rem = skarder
         for stat in st:
-            if type(stat) == str:
-                s = stats[stat]
-                if not silent: print(stat,end=" ")
-            else:
-                s = stat
-                if not silent: print("  ",end=" ")
-            v = w20_1()
-            if not silent: print("%2d / %2d"%(v, s))
-            if s + rem < v or v == 20:
-                if not nonstop:
-                    if not silent: print("Probe nicht bestanden")
-                    return False
-                else: failed = True
-            else: rem = rem + min(0, s - v)
-        if failed:
-            if not silent: print("Probe nicht bestanden")
-            return False
-        else:
-            remain = rem
-            if not silent:
-                print("Probe bestanden",end="")
-                if skarder > 0: print(" mit %d übrig"%(rem),end="")
-                print("")
-            return True
+            s,v = _prope_stat(stat,silent)
+            if not silent: print("%2d / %2d"%(v,s))
+            if v == 20: zwanzigen += 1
+            elif v == 1: einsen += 1
+            if v > s: rem -= v - s
+        failed = -rem
+    return _probe_printout(skill,rem,failed,einsen,zwanzigen,len(st))
+# }}}
+
+def _prope_stat(stat,silent):# {{{
+    if type(stat) == str:
+        s = stats[stat]
+        if not silent: print(stat,end=" ")
+    else:
+        s = stat
+        if not silent: print("  ",end=" ")
+    return (s,w20_1())
+# }}}
+
+def _probe_printout(skill,rem,failed,einsen,zwanzigen,proben_len):# {{{
+    global remain
+    remain = max(1,min(skill,rem))
+    if einsen == proben_len:
+        print("Probe bestanden mit %d übrig!"%(remain),end=" ")
+        print("Spektakulärer Erfolg!")
+        return True
+    if einsen == 2:
+        print("Probe bestande mit %d übrig"%(remain))
+        return True
+    remain = failed
+    if zwanzigen == proben_len:
+        print("Probe nicht bestanden mit %d zuviel!"%(failed),end=" ")
+        print("Spektakulärer Patzer!")
+        return False
+    if zwanzigen == 2:
+        print("Probe nicht bestanden mit %d zuviel!"%(failed))
+        return False
+    if failed > 0:
+        print("Probe nicht bestanden mit %d zuviel"%(failed))
+        return False
+    remain = max(1,min(skill,rem))
+    print("Probe bestanden mit %d übrig"%(remain))
+    return True
 # }}}
 
 def chance(st1,st2,st3,harder=0,skill=0,silent=False,# {{{
