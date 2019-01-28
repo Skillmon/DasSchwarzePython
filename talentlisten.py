@@ -7,8 +7,8 @@ erst = ("erste", "zweite", "dritte")
 
 BEx2 = "Das Talent wird um die zweifache BE erschwert."
 BEx1 = "Das Talent wird um die einfache BE erschwert."
-def BE(inp,add="einfache"):
-    return "Das Talent wird um die %s BE%+d erschwert."%(add,inp)
+def BE(inp,add="ein"):
+    return "Das Talent wird um die %sfache BE%+d erschwert."%(add,inp)
 
 class Talentliste(object):# {{{
     def __init__(self,namenUproben=False):
@@ -116,13 +116,13 @@ class Probe(object):# {{{
             else: entry = matches[0]
         probe  = list(liste.proben[entry])
         harder = 0
-        if len(probe) == 3:
-            for i in range(len(probe)):
-                if type(probe[i]) == list or type(probe[i]) == tuple:
-                    print("Die %s Eigenschaft der Probe scheint wählbar."%(
-                        erst[i]))
-                    print("Welche Eigenschaft soll verwendet werden?")
-                    probe[i] = ipop.choice_from_list(probe[i])
+        for i in range(min(len(probe),3)):
+            if type(probe[i]) == list or type(probe[i]) == tuple:
+                print("Die %s Eigenschaft der Probe scheint wählbar."%(
+                    erst[i]))
+                print("Welche Eigenschaft soll verwendet werden?")
+                probe[i] = ipop.choice_from_list(probe[i])
+        if len(probe) == 3: pass
         elif len(probe) == 4:# {{{
             if probe[3] == "+Mod":
                 print("Die Probe kann von Modifikationen erschwert werden.")
@@ -154,7 +154,7 @@ class Probe(object):# {{{
         elif len(probe) == 1:
             if type(probe[0]) == str:
                 return self.proben_eigenschaften(probe[0], liste,
-                        fullmatch=False)
+                        fullmatch=True)
             else:
                 print("Kritischer Fehler in Talentlistenstruktur.")
                 print("Das einzige Feld in 'Proben' ist kein String.")
@@ -192,11 +192,11 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Ängste lindern",                      ("mu","in","ch",)),
     ("Animatio stummer Diener",             ("kl","ff","ge",)),
     ("Applicatus Zauberspeicher",           ("kl","ff","ff",)),
-    ("Aquafaxius",                          ("Ignifaxius",)),
+    ("Aquafaxius",                          ("Ignifaxius Flammenstrahl",)),
     ("Arachnea Krabbeltier",                ("mu","in","ch",)),
     ("Arcanovi Artefakt",                   ("kl","kl","ff",)),
     ("Armatrutz",                           ("in","ge","ko",)),
-    ("Archofaxius",                         ("Ignifaxius",)),
+    ("Archofaxius",                         ("Ignifaxius Flammenstrahl",)),
     ("Atemnot",                             ("mu","ko","kk","+MR")),
     ("Attributo",                           ("kl","ch",basis_eigenschaften)),
     ("Aufgeblasen abgehoben",               ("ch","kk","ko","+MR")),
@@ -272,8 +272,8 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Fluch der Pestilenz",                 ("mu","kl","ch","+MR")),
     ("Foramen Foraminor",                   ("kk","kl","ff","+Mod")),
     ("Fortifex arkane Wand",                ("in","kk","ko",)),
-    ("Frigifaxius",                         ("Ignifaxius",)),
-    ("Frigosphaero",                        ("Ignisphaero",)),
+    ("Frigifaxius",                         ("Ignifaxius Flammenstrahl",)),
+    ("Frigosphaero",                        ("Ignisphaero Feuerball",)),
     ("Fulminictus Donnerkeil",              ("in","ge","ko",)),
 
     ("Gardianum Zauberschild",              ("kl","in","ko",)),
@@ -308,7 +308,7 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Holterdipolter",                      ("in","in","ff",)),
     ("Hornissenruf",                        ("Krähenruf",)),
     ("Horriphobus Schreckgestalt",          ("in","in","ff",)),
-    ("Humofaxius",                          ("Ignifaxius",)),
+    ("Humofaxius",                          ("Ignifaxius Flammenstrahl",)),
     ("Humusbann",                           ("Elementarbann",)),
 
     ("Ignifaxius Flammenstrahl",            ("kl","ff","ko",)),
@@ -390,8 +390,8 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Objekt entzaubern",                   ("kl","in","ff","+ Mod")),
     ("Oculus Astralis",                     ("kl","in","ch",)),
     ("Odem Arcanum",                        ("kl","in","in",)),
-    ("Orcanofaxius",                        ("Ignifaxius",)),
-    ("Orcanosphaero",                       ("Ignisphaero",)),
+    ("Orcanofaxius",                        ("Ignifaxius Flammenstrahl",)),
+    ("Orcanosphaero",                       ("Ignisphaero Feuerball",)),
     ("Orkanwand",                           ("Wand aus Dornen",)),
 
     ("Pandaemonium",                        ("mu","mu","ch",)),
@@ -469,7 +469,7 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Unitatio Geistesbund",                ("in","ch","ko",)),
     ("Unsichtbarer Jäger",                  ("in","ff","ge",)),
 
-    ("Valetudo Lebenskraft",                ("Fulminictus",)),
+    ("Valetudo Lebenskraft",                ("Fulminictus Donnerkeil",)),
     ("Veränderung aufheben",                ("kl","in","ko","+Mod")),
     ("Verschwindibus",                      ("in","ch","ge",)),
     ("Verständigung stören",                ("kl","kl","in","+MR")),
@@ -508,29 +508,29 @@ zauberliste = Talentliste(namenUproben=(# {{{
     ("Zauberzwang",                         ("mu","ch","ch","+MR")),
     ("Zorn der Elemente",                   ("mu","ch","ko",)),
     ("Zunge lähmen",                        ("mu","ch","ff","+MR")),
-    ("Zwang zur Wahrheit",                  ("Respondami",)),
+    ("Zwang zur Wahrheit",                  ("Respondami Wahrheitszwang",)),
     ("Zwingtanz",                           ("mu","kl","ch","+MR")),
     ))# }}}
 
 ## Alle Talente aus Wege der Helden ab Seite 315 mit zugehörigen Proben
 talentliste = Talentliste(namenUproben=(# {{{
-    ("Akrobatik",               ("mu","ge","kk"),             "körperlich"),
+    ("Akrobatik",               ("mu","ge","kk",True,BEx2),   "körperlich"),
     ("Athletik",                ("ge","ko","kk",True,BEx2),   "körperlich"),
-    ("Fliegen",                 ("mu","in","ge"),             "körperlich"),
-    ("Gaukeleien",              ("mu","ch","ff"),             "körperlich"),
+    ("Fliegen",                 ("mu","in","ge",True,BEx1),   "körperlich"),
+    ("Gaukeleien",              ("mu","ch","ff",True,BEx2),   "körperlich"),
     ("Klettern",                ("mu","ge","kk",True,BEx2),   "körperlich"),
     ("Körperbeherrschung",      ("mu","in","ge",True,BEx2),   "körperlich"),
     ("Reiten",                  ("ch","ge","kk",True,BE(-2)), "körperlich"),
-    ("Schleichen",              ("mu","in","ge"),             "körperlich"),
+    ("Schleichen",              ("mu","in","ge",True,BEx1),   "körperlich"),
     ("Schwimmen",               ("ge","ko","kk",True,BEx2),   "körperlich"),
     ("Selbstbeherrschung",      ("mu","ko","kk"),             "körperlich"),
     ("Sich Verstecken",         ("mu","in","ge",True,BE(-2)), "körperlich"),
-    ("Singen",                  ("in","ch",("ch","ko")),   "körperlich"),
-    ("Sinnenschärfe",           ("kl","in",("in","ff")),   "körperlich"),
-    ("Skifahren",               ("ge","ge","ko"),             "körperlich"),
-    ("Stimmen Imitieren",       ("kl","in","ch"),             "körperlich"),
+    ("Singen",                  ("in","ch",("ch","ko"),True,BE(-3)),"körperlich"),
+    ("Sinnenschärfe",           ("kl","in",("in","ff")),      "körperlich"),
+    ("Skifahren",               ("ge","ge","ko",True,BE(-2)), "körperlich"),
+    ("Stimmen Imitieren",       ("kl","in","ch",True,BE(-4)), "körperlich"),
     ("Tanzen",                  ("ch","ge","ge",True,BEx2),   "körperlich"),
-    ("Taschendiebstahl",        ("mu","in","ff"),             "körperlich"),
+    ("Taschendiebstahl",        ("mu","in","ff",True,BEx2),   "körperlich"),
     ("Zechen",                  ("in","ko","kk"),             "körperlich"),
 
     ("Betören",                 ("in","ch","ch"),       "gesellschaftlich"),
@@ -544,7 +544,7 @@ talentliste = Talentliste(namenUproben=(# {{{
     ("Überreden",               ("mu","in","ch"),       "gesellschaftlich"),
     ("Überzeugen",              ("kl","in","ch"),       "gesellschaftlich"),
 
-    ("Fährtensuchen",           ("kl","in",("in","ko")), "Natur"),
+    ("Fährtensuchen",           ("kl","in",("in","ko")),    "Natur"),
     ("Fallenstellen",           ("kl","ff","kk"),           "Natur"),
     # ("Fallen stellen",          ("kl","ff","kk"),           "Natur"),
     ("Fesseln/Entfesseln",      ("ff","ge","kk"),           "Natur"),
@@ -577,8 +577,39 @@ talentliste = Talentliste(namenUproben=(# {{{
     ("Sternkunde",              ("kl","kl","in"),       "Wissen"),
     ("Tierkunde",               ("mu","kl","in"),       "Wissen"),
 
-    ("Schrift",                 ("kl","kl","ff"),       "Sprachen & Schriften"),
-    ("Sprachen",                ("kl","in","ch"),       "Sprachen & Schriften"),
+    ("Sprache",                    ("kl","in","ch"),    "Sprachen & Schriften"),
+    ("Alaani",                     ("Sprache",),        "Sprachen & Schriften"),
+    ("Asdharia (Sprache)",         ("Sprache",),        "Sprachen & Schriften"),
+    ("Atak",                       ("Sprache",),        "Sprachen & Schriften"),
+    ("Bosparano",                  ("Sprache",),        "Sprachen & Schriften"),
+    ("Füchsisch",                  ("Sprache",),        "Sprachen & Schriften"),
+    ("Garethi",                    ("Sprache",),        "Sprachen & Schriften"),
+    ("Goblinisch",                 ("Sprache",),        "Sprachen & Schriften"),
+    ("Isdira (Sprache)",           ("Sprache",),        "Sprachen & Schriften"),
+    ("Mohisch",                    ("Sprache",),        "Sprachen & Schriften"),
+    ("Nujuka",                     ("Sprache",),        "Sprachen & Schriften"),
+    ("Oloarkh",                    ("Sprache",),        "Sprachen & Schriften"),
+    ("Ologhaijan",                 ("Sprache",),        "Sprachen & Schriften"),
+    ("Orkisch",                    ("Sprache",),        "Sprachen & Schriften"),
+    ("Rogolan (Sprache)",          ("Sprache",),        "Sprachen & Schriften"),
+    ("Rssahh",                     ("Sprache",),        "Sprachen & Schriften"),
+    ("Thorwalsch",                 ("Sprache",),        "Sprachen & Schriften"),
+    ("Tulamidya (Sprache)",        ("Sprache",),        "Sprachen & Schriften"),
+    ("Ur-Tulamidya (Sprache)",     ("Sprache",),        "Sprachen & Schriften"),
+    ("Zhayad",                     ("Sprache",),        "Sprachen & Schriften"),
+
+    ("Schrift",                    ("kl","kl","ff"),    "Sprachen & Schriften"),
+    ("Asdharia (Schrift)",         ("Schrift",),        "Sprachen & Schriften"),
+    ("Chrmk",                      ("Schrift",),        "Sprachen & Schriften"),
+    ("Geheilgte Glyphen von Unau", ("Schrift",),        "Sprachen & Schriften"),
+    ("Hjaldingsche Runen",         ("Schrift",),        "Sprachen & Schriften"),
+    ("Isdira (Schrift)",           ("Schrift",),        "Sprachen & Schriften"),
+    ("Kusliker Zeichen",           ("Schrift",),        "Sprachen & Schriften"),
+    ("Nanduria",                   ("Schrift",),        "Sprachen & Schriften"),
+    ("Rogolan (Schrift)",          ("Schrift",),        "Sprachen & Schriften"),
+    ("Tulamidya (Schrift)",        ("Schrift",),        "Sprachen & Schriften"),
+    ("Ur-Tulamidya (Schrift)",     ("Schrift",),        "Sprachen & Schriften"),
+    ("Zhayad",                     ("Schrift",),        "Sprachen & Schriften"),
 
     ("Abrichten",               ("mu","in","ch"),       "Handwerk"),
     ("Ackerbau",                ("in","ff","ko"),       "Handwerk"),
