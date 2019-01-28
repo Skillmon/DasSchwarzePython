@@ -43,10 +43,26 @@ class Gabe(object):# {{{
 
 class Held(object):# {{{
     def __init__(self, name=None, spitzname=None):# {{{
-        self.eigenschaften = self.Eigenschaften()
         self.name = name
         self.spitzname = spitzname
+        self.eigenschaften = self.Eigenschaften()
+        self.asp = self.Eig_mods()
+        self.aup = self.Eig_mods()
+        self.kap = self.Eig_mods()
+        self.lep = self.Eig_mods()
+        self.mr  = self.Eig_mods()
     # }}}
+    class Eig_mods(object):
+        def __init__(self):
+            self.modifikator = 0
+            self.perma_minus = 0
+            self.perma_plus  = 0
+            self.zugekauft   = 0
+        def set(self,mod=False,minus=False,plus=False,zug=False):
+            if mod != False:    self.modifikator = mod
+            if minus != False:  self.perma_minus = minus
+            if plus  != False:  self.perma_plus  = plus
+            if zug    != False: self.zugekauft   = zug
     class Eigenschaften(object):# {{{
         def __init__(self):
             self.basis = {
@@ -111,7 +127,7 @@ class Held(object):# {{{
                 print(talauber+" '%s' nicht bekannt."%(name))
                 return False
             elif len(matches) != 1:
-                print("'%s' koonte nicht eindeutig ermittelt werden!"%(name))
+                print("'%s' konnte nicht eindeutig ermittelt werden!"%(name))
                 print("Welche%s %s ist gemeint?"%(
                     msg_endung_welche[talauber], talauber))
                 entry = ipop.choice_from_list(matches,
@@ -125,19 +141,19 @@ class Held(object):# {{{
         bekannt[name] = Talauber(probe, skill, name=name)
         return True
     # }}}
-    def liste_talente(self, name=False, probe=False):# {{{
+    def liste_talente(self, name=False, probe=True):# {{{
         return ipop.trywrap(self._liste_skills,
                 (self.eigenschaften.talente.items(), "Talent", name, probe))
     # }}}
-    def liste_zauber(self, name=False, probe=False):# {{{
+    def liste_zauber(self, name=False, probe=True):# {{{
         return ipop.trywrap(self._liste_skills,
                 (self.eigenschaften.zauber.items(), "Zauber", name, probe))
     # }}}
-    def liste_gaben(self, name=False, probe=False):# {{{
+    def liste_gaben(self, name=False, probe=True):# {{{
         return ipop.trywrap(self._liste_skills,
                 (self.eigenschaften.gaben.items(), "Gabe", name, probe))
     # }}}
-    def _liste_skills(self, liste, talauber, name=False, probe=False):# {{{
+    def _liste_skills(self, liste, talauber, name=False, probe=True):# {{{
         if len(liste) == 0:
             self._kein_talent(talauber)
             return -1
