@@ -44,7 +44,7 @@ def probe1(st1,harder=0,skill=0,silent=False,stats=stats):# {{{
         if type(st1) == str: print(st1,end="")
         else: print("  ",end="")
         print(" %2d / %2d"%(v1,s1),end="")
-        if skarder < 0: print(" - %2d"%(skarder))
+        if skarder < 0: print(" - %2d"%(abs(skarder)))
         else: print("")
     if v1 == 20:
         if not silent: print("Probe nicht bestanden")
@@ -76,7 +76,7 @@ def probe3(st1,st2,st3,harder=0,skill=0,silent=False,stats=stats):# {{{
             if type(st[i]) == str: print(st[i],end=" ")
             else: print("  ",end=" ")
             print("%2d / %2d"%(v[i],s[i]),end=" ")
-            if skarder < 0: print("- %d"%(skarder))
+            if skarder < 0: print("- %d"%(abs(skarder)))
             else: print("")
     zwanzigen = v.count(20)
     einsen = v.count(1)  
